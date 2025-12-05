@@ -12,40 +12,46 @@ import os
 # Serve React SPA
 def frontend_fallback(request, path=''):
     """
-    Serve React frontend from staticfiles/frontend/
+    Serve React frontend from staticfiles/frontend/ or staticfiles/
     Falls back to index.html for client-side routing.
     """
-    # Construct the file path
-    frontend_root = os.path.join(settings.STATIC_ROOT, 'frontend')
-    file_path = os.path.join(frontend_root, path)
+    # Possible locations for frontend files
+    possible_roots = [
+        os.path.join(settings.STATIC_ROOT, 'frontend'),  # After collectstatic
+        os.path.join(settings.STATIC_ROOT, 'frontend', 'assets'),  # Assets subfolder
+        settings.STATIC_ROOT,  # Direct in staticfiles
+    ]
     
-    # If it's an existing file, serve it
-    if path and os.path.isfile(file_path):
-        with open(file_path, 'rb') as f:
-            # Determine content type
-            if file_path.endswith('.js'):
-                content_type = 'application/javascript'
-            elif file_path.endswith('.css'):
-                content_type = 'text/css'
-            elif file_path.endswith('.json'):
-                content_type = 'application/json'
-            elif file_path.endswith('.svg'):
-                content_type = 'image/svg+xml'
-            elif file_path.endswith('.png'):
-                content_type = 'image/png'
-            elif file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
-                content_type = 'image/jpeg'
-            elif file_path.endswith('.woff2'):
-                content_type = 'font/woff2'
-            else:
-                content_type = 'text/plain'
-            return HttpResponse(f.read(), content_type=content_type)
+    # Try to find and serve the requested file
+    for root in possible_roots:
+        file_path = os.path.join(root, path)
+        if path and os.path.isfile(file_path):
+            with open(file_path, 'rb') as f:
+                # Determine content type
+                if file_path.endswith('.js'):
+                    content_type = 'application/javascript'
+                elif file_path.endswith('.css'):
+                    content_type = 'text/css'
+                elif file_path.endswith('.json'):
+                    content_type = 'application/json'
+                elif file_path.endswith('.svg'):
+                    content_type = 'image/svg+xml'
+                elif file_path.endswith('.png'):
+                    content_type = 'image/png'
+                elif file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
+                    content_type = 'image/jpeg'
+                elif file_path.endswith('.woff2'):
+                    content_type = 'font/woff2'
+                else:
+                    content_type = 'text/plain'
+                return HttpResponse(f.read(), content_type=content_type)
     
     # Default to index.html for SPA routing
-    index_path = os.path.join(frontend_root, 'index.html')
-    if os.path.isfile(index_path):
-        with open(index_path, 'rb') as f:
-            return HttpResponse(f.read(), content_type='text/html')
+    for root in possible_roots:
+        index_path = os.path.join(root, 'index.html')
+        if os.path.isfile(index_path):
+            with open(index_path, 'rb') as f:
+                return HttpResponse(f.read(), content_type='text/html')
     
     return HttpResponse('Frontend index not found', status=404)
 

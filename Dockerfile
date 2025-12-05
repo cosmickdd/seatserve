@@ -68,9 +68,14 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/health/ || exit 1
 
 # ============================================================================
-# Collect Static Files
+# Collect Static Files & Verify Frontend
 # ============================================================================
-RUN python manage.py collectstatic --noinput --clear 2>/dev/null || true
+RUN python manage.py collectstatic --noinput --clear 2>&1 && \
+    echo "=== Checking staticfiles directory ===" && \
+    ls -la /app/staticfiles/ && \
+    echo "=== Checking frontend files ===" && \
+    ls -la /app/staticfiles/frontend/ 2>/dev/null || echo "frontend dir not found" && \
+    test -f /app/staticfiles/frontend/index.html && echo "✓ index.html found" || echo "✗ index.html NOT found"
 
 # ============================================================================
 # Expose Port
