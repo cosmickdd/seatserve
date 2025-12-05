@@ -16,7 +16,11 @@ RUN npm install --legacy-peer-deps
 COPY seatserve-frontend .
 
 # Build frontend for production
-RUN npm run build
+RUN VITE_API_URL=/api npm run build && \
+    echo "=== Frontend build output ===" && \
+    ls -la dist/ && \
+    echo "=== Checking for index.html ===" && \
+    ls -la dist/index.html
 
 # ============================================================================
 # Stage 2: Build Backend & Runtime
