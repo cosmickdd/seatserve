@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import staffAPI from '../api/staff';
+import { staffAPI } from '../api/staff';
 import { Button, Card, Input, Select, Badge, Modal, Alert, Spinner, EmptyState } from '../components/common';
 import { Container } from '../components/layout';
 

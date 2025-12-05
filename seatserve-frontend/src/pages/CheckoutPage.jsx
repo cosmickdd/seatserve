@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import stripeAPI from '../api/stripe';
-import ordersAPI from '../api/endpoints';
+import { stripeAPI } from '../api/stripe';
+import { ordersAPI } from '../api/endpoints';
 import { Button, Card, Spinner, Alert } from '../components/common';
 import { Container } from '../components/layout';
 

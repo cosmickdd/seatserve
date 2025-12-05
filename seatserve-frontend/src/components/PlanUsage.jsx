@@ -3,7 +3,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Card, Badge, Button } from './common';
-import restaurantAPI from '../api/endpoints';
+import { restaurantsAPI } from '../api/endpoints';
 
 export function PlanUsageCard({ restaurant }) {
   const [planInfo, setPlanInfo] = useState(null);
@@ -14,7 +14,7 @@ export function PlanUsageCard({ restaurant }) {
       try {
         setLoading(true);
         // Get plan info from stats endpoints
-        const tableStats = await restaurantAPI.tableStats?.();
+        const tableStats = await restaurantsAPI.tableStats?.();
         if (tableStats?.plan) {
           setPlanInfo(tableStats.plan);
         }
