@@ -9,7 +9,7 @@ django-cors-headers==4.3.1
 requests==2.31.0
 pytest==7.4.3
 pytest-django==4.7.0
-stripe==14.1.0
+stripe==13.0.0
 celery==5.3.4
 redis==5.0.1
 
