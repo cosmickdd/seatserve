@@ -1,9 +1,33 @@
 # Documentation files (keeping README.md only)
 *.md
 !README.md
+!.gitignore
 
 # Security documentation (never push)
 SECURITY*.md
+
+# Summary and deployment documentation
+00_START_HERE.md
+DEPLOY_NOW.md
+DEPLOYMENT_GUIDE.md
+PRODUCTION_CHECKLIST.md
+PRODUCTION_DEPLOYMENT_READY.md
+SUMMARY.md
+STATUS_REPORT.txt
+test-docker.sh
+
+# Phase 2 documentation (development only)
+PHASE2_*.md
+
+# Setup and reference documentation
+SETUP.md
+QUICK_REFERENCE.md
+ROADMAP.md
+COMPLETION_SUMMARY.md
+
+# Docker compose files (local development only)
+docker-compose.prod.yml
+Dockerfile
 
 # Dependencies
 node_modules/
