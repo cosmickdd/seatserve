@@ -5,33 +5,49 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.views.static import serve
 import os
 
-def serve_spa(request, path=''):
+# Serve React SPA
+def frontend_fallback(request, path=''):
     """
-    Serve React SPA files from static/frontend directory.
-    For any non-API route, serve index.html to let React Router handle it.
+    Serve React frontend from staticfiles/frontend/
+    Falls back to index.html for client-side routing.
     """
-    # Don't handle API routes
-    if path.startswith('api/'):
-        return None
+    # Construct the file path
+    frontend_root = os.path.join(settings.STATIC_ROOT, 'frontend')
+    file_path = os.path.join(frontend_root, path)
     
-    frontend_dir = os.path.join(settings.STATIC_ROOT, 'frontend')
-    requested_file = os.path.join(frontend_dir, path)
+    # If it's an existing file, serve it
+    if path and os.path.isfile(file_path):
+        with open(file_path, 'rb') as f:
+            # Determine content type
+            if file_path.endswith('.js'):
+                content_type = 'application/javascript'
+            elif file_path.endswith('.css'):
+                content_type = 'text/css'
+            elif file_path.endswith('.json'):
+                content_type = 'application/json'
+            elif file_path.endswith('.svg'):
+                content_type = 'image/svg+xml'
+            elif file_path.endswith('.png'):
+                content_type = 'image/png'
+            elif file_path.endswith('.jpg') or file_path.endswith('.jpeg'):
+                content_type = 'image/jpeg'
+            elif file_path.endswith('.woff2'):
+                content_type = 'font/woff2'
+            else:
+                content_type = 'text/plain'
+            return HttpResponse(f.read(), content_type=content_type)
     
-    # If it's a static file that exists, serve it
-    if os.path.isfile(requested_file):
-        return serve(request, os.path.join('frontend', path), document_root=settings.STATIC_ROOT)
-    
-    # For everything else, serve index.html (SPA routing)
-    index_file = os.path.join(frontend_dir, 'index.html')
-    if os.path.isfile(index_file):
-        with open(index_file, 'rb') as f:
+    # Default to index.html for SPA routing
+    index_path = os.path.join(frontend_root, 'index.html')
+    if os.path.isfile(index_path):
+        with open(index_path, 'rb') as f:
             return HttpResponse(f.read(), content_type='text/html')
     
-    return HttpResponse('Frontend not found', status=404)
+    return HttpResponse('Frontend index not found', status=404)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -43,20 +59,20 @@ urlpatterns = [
     path('api/payments/', include('payments.urls')),
 ]
 
-# Serve static files with WhiteNoise in production
+# In production: WhiteNoise serves static files, add frontend catch-all
+# In development: add debug routes
 if not settings.DEBUG:
-    # Serve static files explicitly
+    # Serve static files directory (WhiteNoise handles this efficiently)
     urlpatterns += [
         path('static/<path:path>', serve, {'document_root': settings.STATIC_ROOT}),
     ]
-    # SPA catch-all for all non-API routes
-    urlpatterns += [
-        re_path(r'^(?!admin/)(?!api/)(?P<path>.*)$', serve_spa, name='spa_catchall'),
-    ]
-else:
-    # Development: use Django's default static file serving
+
+# Frontend SPA catch-all - must be last!
+# This catches everything that didn't match API or admin
+urlpatterns += [
+    re_path(r'^(?!admin/)(?!api/)(?!static/).*$', frontend_fallback),
+]
+
+# Development only
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += [
-        re_path(r'^(?!admin/)(?!api/)(?P<path>.*)$', serve_spa, name='spa_catchall'),
-    ]
