@@ -10,20 +10,20 @@ from django.http import FileResponse
 import os
 
 def serve_frontend(request, path=''):
-    """Serve frontend files from staticfiles/frontend"""
-    frontend_path = os.path.join(settings.STATIC_ROOT, 'frontend')
+    """Serve frontend files from staticfiles"""
+    # Try to serve from staticfiles first (after collectstatic)
+    file_path = os.path.join(settings.STATIC_ROOT, path)
     
-    # Try exact file first
-    file_path = os.path.join(frontend_path, path)
+    # Check if it's a file that exists
     if os.path.isfile(file_path):
-        return serve(request, path, document_root=frontend_path)
+        return serve(request, path, document_root=settings.STATIC_ROOT)
     
-    # Default to index.html for SPA routing
-    index_path = os.path.join(frontend_path, 'index.html')
+    # For SPA routing, serve index.html
+    index_path = os.path.join(settings.STATIC_ROOT, 'frontend', 'index.html')
     if os.path.isfile(index_path):
         return FileResponse(open(index_path, 'rb'), content_type='text/html')
     
-    # Fallback 404
+    # Fallback for non-existent paths
     from django.http import HttpResponseNotFound
     return HttpResponseNotFound('Frontend files not found')
 
