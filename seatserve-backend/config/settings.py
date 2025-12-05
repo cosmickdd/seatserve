@@ -285,5 +285,6 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 # WhiteNoise Configuration for efficient static file serving
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Use the simpler storage that doesn't create manifest files
+STATICFILES_STORAGE = 'whitenoise.storage.WhiteNoiseStaticFilesStorage'
 

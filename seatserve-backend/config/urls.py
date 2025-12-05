@@ -23,7 +23,7 @@ def health_check(request):
 def spa_fallback(request, path=''):
     """
     Serve React index.html for SPA routing on all non-API routes.
-    WhiteNoise will serve actual static files before this runs.
+    WhiteNoise middleware handles static files BEFORE these views.
     """
     import os
     
@@ -53,12 +53,12 @@ urlpatterns = [
     path('api/orders/', include('orders.urls')),
     path('api/public/', include('orders.public_urls')),
     path('api/payments/', include('payments.urls')),
-    # Root path - serve index.html
+    
+    # SPA Fallback Routes (after all other patterns)
+    # Only match paths that don't have dots (file extensions)
+    # WhiteNoise middleware intercepts /static/ and /assets/ before these views run
     path('', spa_fallback),
-    # SPA catch-all: Only match paths without file extensions (no . in path)
-    # This allows WhiteNoise to serve /assets/index-CvI8qVw6.js and other static files
-    re_path(r'^(?!static/|media/|admin/|api/|diagnostic/|\.well-known/)(?!.*\.).*/$', spa_fallback),
-    re_path(r'^(?!static/|media/|admin/|api/|diagnostic/|\.well-known/)(?!.*\.)[^.]+$', spa_fallback),
+    re_path(r'^[a-zA-Z0-9/_-]+/?$', spa_fallback),  # Simple alphanumeric paths
 ]
 
 # Serve media in development
