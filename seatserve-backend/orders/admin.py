@@ -1,6 +1,5 @@
 from django.contrib import admin
 from orders.models import Order, OrderItem
-from payments.models import Payment
 
 
 class OrderItemInline(admin.TabularInline):
@@ -24,11 +23,3 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_filter = ('order__restaurant', 'created_at')
     search_fields = ('order__public_token', 'menu_item__name')
     readonly_fields = ('created_at',)
-
-
-@admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'status', 'amount', 'gateway', 'created_at')
-    list_filter = ('status', 'gateway', 'created_at')
-    search_fields = ('order__public_token', 'gateway_reference')
-    readonly_fields = ('created_at', 'updated_at')
