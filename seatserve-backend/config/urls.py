@@ -2,30 +2,10 @@
 URL configuration for seatserve project.
 """
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.static import serve
-from django.http import FileResponse
-import os
-
-def serve_frontend(request, path=''):
-    """Serve frontend files from staticfiles"""
-    # Try to serve from staticfiles first (after collectstatic)
-    file_path = os.path.join(settings.STATIC_ROOT, path)
-    
-    # Check if it's a file that exists
-    if os.path.isfile(file_path):
-        return serve(request, path, document_root=settings.STATIC_ROOT)
-    
-    # For SPA routing, serve index.html
-    index_path = os.path.join(settings.STATIC_ROOT, 'frontend', 'index.html')
-    if os.path.isfile(index_path):
-        return FileResponse(open(index_path, 'rb'), content_type='text/html')
-    
-    # Fallback for non-existent paths
-    from django.http import HttpResponseNotFound
-    return HttpResponseNotFound('Frontend files not found')
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -37,12 +17,25 @@ urlpatterns = [
     path('api/payments/', include('payments.urls')),
 ]
 
-# Serve static and frontend
-if not settings.DEBUG:
-    urlpatterns += [
-        path('static/<path:path>', serve, {'document_root': settings.STATIC_ROOT}),
-        re_path(r'^(?!api)(?P<path>.*)$', serve_frontend),  # Catch non-API routes
-    ]
-else:
+# WhiteNoise handles static files in production
+# Fallback to index.html for SPA routing
+from django.views.decorators.cache import cache_page
+
+def index_view(request):
+    """Serve React index.html for SPA routing"""
+    import os
+    index_path = os.path.join(settings.STATIC_ROOT, 'frontend', 'index.html')
+    if os.path.isfile(index_path):
+        with open(index_path, 'rb') as f:
+            from django.http import HttpResponse
+            return HttpResponse(f.read(), content_type='text/html')
+    return admin.site.urls
+
+urlpatterns += [
+    path('', index_view),  # SPA catch-all
+]
+
+# Serve static/media in development only
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
