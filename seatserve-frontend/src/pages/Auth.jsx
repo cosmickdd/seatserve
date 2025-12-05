@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../store/authSlice';
-import { Container, Button, Input, Alert } from '../components/common';
-import { Navbar, Footer } from '../components/layout';
+import { Button, Input, Alert } from '../components/common';
+import { Navbar, Footer, Container } from '../components/layout';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
