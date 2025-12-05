@@ -5,29 +5,42 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import os
+
+# Health check endpoint
+def health_check(request):
+    """Simple health check for deployment platforms."""
+    return JsonResponse({
+        'status': 'healthy',
+        'service': 'SeatServe',
+        'environment': 'production' if not settings.DEBUG else 'development'
+    })
 
 def spa_fallback(request, path=''):
     """
     Serve React index.html for SPA routing on all non-API routes.
     WhiteNoise will serve actual static files before this runs.
     """
-    # Try to find index.html in multiple locations
-    index_locations = [
-        os.path.join(settings.STATIC_ROOT, 'frontend', 'index.html'),
-        os.path.join(settings.STATIC_ROOT, 'index.html'),
-        os.path.join(settings.BASE_DIR, 'static', 'frontend', 'index.html'),
-    ]
+    import os
     
-    for index_path in index_locations:
-        if os.path.isfile(index_path):
-            with open(index_path, 'rb') as f:
-                return HttpResponse(f.read(), content_type='text/html')
+    # After collectstatic, index.html should be in STATIC_ROOT
+    index_path = os.path.join(settings.STATIC_ROOT, 'index.html')
     
-    return HttpResponse('Frontend not found', status=404)
+    if os.path.isfile(index_path):
+        with open(index_path, 'rb') as f:
+            return HttpResponse(f.read(), content_type='text/html; charset=utf-8')
+    
+    # Fallback message if index.html not found
+    return HttpResponse(
+        '<!DOCTYPE html><html><body><h1>Frontend Not Found</h1>'
+        '<p>index.html could not be located at: ' + index_path + '</p></body></html>',
+        status=404,
+        content_type='text/html'
+    )
 
 urlpatterns = [
+    path('health/', health_check),
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/restaurants/', include('restaurants.urls')),
@@ -36,8 +49,8 @@ urlpatterns = [
     path('api/public/', include('orders.public_urls')),
     path('api/payments/', include('payments.urls')),
     # SPA catch-all: Serve React for all non-API routes (must be last)
-    re_path(r'^(?!admin|api).*/$', spa_fallback),
-    re_path(r'^(?!admin|api).*$', spa_fallback),
+    re_path(r'^(?!admin|api|health).*/$', spa_fallback),
+    re_path(r'^(?!admin|api|health).*$', spa_fallback),
 ]
 
 # Serve media in development

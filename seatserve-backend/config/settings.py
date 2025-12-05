@@ -111,8 +111,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# Include the /app/static directory with frontend files
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # Include the /app/static directory with frontend files
+    BASE_DIR / 'static',
 ]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

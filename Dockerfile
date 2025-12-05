@@ -59,7 +59,7 @@ RUN mkdir -p /app/staticfiles /app/logs
 # ============================================================================
 # Copy Built Frontend to Backend Static Files
 # ============================================================================
-COPY --from=frontend-builder /app/frontend/dist /app/static/frontend
+COPY --from=frontend-builder /app/frontend/dist /app/static
 
 # ============================================================================
 # Collect Static Files & Verify Frontend
@@ -68,6 +68,7 @@ RUN echo "=== Collecting static files ===" && \
     python manage.py collectstatic --noinput --clear && \
     echo "=== Checking frontend files ===" && \
     ls -la /app/staticfiles/ && \
+    if [ -f /app/staticfiles/index.html ]; then echo "✓ Frontend index.html found"; else echo "✗ WARNING: index.html not found!"; fi && \
     echo "✓ Static files collected successfully"
 
 # ============================================================================
