@@ -11,7 +11,7 @@ WORKDIR /app/frontend
 
 # Copy frontend source
 COPY seatserve-frontend/package*.json ./
-RUN npm install --omit=dev --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 COPY seatserve-frontend .
 
