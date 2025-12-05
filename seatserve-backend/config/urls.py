@@ -49,8 +49,8 @@ urlpatterns = [
     path('api/public/', include('orders.public_urls')),
     path('api/payments/', include('payments.urls')),
     # SPA catch-all: Serve React for all non-API routes (must be last)
-    re_path(r'^(?!admin|api|health).*/$', spa_fallback),
-    re_path(r'^(?!admin|api|health).*$', spa_fallback),
+    # Exclude static files, media, admin, api, and health endpoints
+    re_path(r'^(?!static/|media/|admin/|api/|health/|\.well-known/).+$', spa_fallback),
 ]
 
 # Serve media in development

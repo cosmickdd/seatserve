@@ -284,3 +284,6 @@ CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localho
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
+# WhiteNoise Configuration for efficient static file serving
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
