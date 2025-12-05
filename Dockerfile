@@ -62,13 +62,16 @@ RUN pip install --no-cache-dir gunicorn whitenoise
 # ============================================================================
 COPY seatserve-backend . 
 
-# Create necessary directories
-RUN mkdir -p /app/staticfiles /app/logs
+# Create necessary directories (ensure static exists for frontend files)
+RUN mkdir -p /app/staticfiles /app/logs /app/static
 
 # ============================================================================
 # Copy Built Frontend to Backend Static Files
 # ============================================================================
-RUN echo "=== Copying frontend dist to backend static ===" && \
+RUN echo "=== Step 0: Checking if static dir exists ===" && \
+    ls -la /app/static/ || echo "Static dir created fresh"
+
+RUN echo "=== Step 1: Copying frontend dist to backend static ===" && \
     ls -la /app/frontend/dist/ | head -20
 
 COPY --from=frontend-builder /app/frontend/dist /app/static
