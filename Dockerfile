@@ -17,10 +17,15 @@ COPY seatserve-frontend .
 
 # Build frontend for production
 RUN VITE_API_URL=/api npm run build && \
-    echo "=== Frontend build output ===" && \
-    ls -la dist/ && \
-    echo "=== Checking for index.html ===" && \
-    ls -la dist/index.html
+    echo "=== Frontend Build Complete ===" && \
+    echo "Checking /app/frontend/dist contents:" && \
+    ls -la /app/frontend/dist/ && \
+    if [ -f /app/frontend/dist/index.html ]; then \
+        echo "✓ index.html successfully built"; \
+    else \
+        echo "✗ ERROR: index.html not in dist folder!"; \
+        exit 1; \
+    fi
 
 # ============================================================================
 # Stage 2: Build Backend & Runtime
@@ -63,17 +68,36 @@ RUN mkdir -p /app/staticfiles /app/logs
 # ============================================================================
 # Copy Built Frontend to Backend Static Files
 # ============================================================================
+RUN echo "=== Copying frontend dist to backend static ===" && \
+    ls -la /app/frontend/dist/ | head -20
+
 COPY --from=frontend-builder /app/frontend/dist /app/static
+
+RUN echo "=== After copy: Contents of /app/static ===" && \
+    ls -la /app/static/ | head -30 && \
+    if [ -f /app/static/index.html ]; then echo "✓ Frontend files copied successfully"; fi
 
 # ============================================================================
 # Collect Static Files & Verify Frontend
 # ============================================================================
-RUN echo "=== Collecting static files ===" && \
-    python manage.py collectstatic --noinput --clear && \
-    echo "=== Checking frontend files ===" && \
+RUN echo "=== Step 1: Contents of /app/static before collectstatic ===" && \
+    ls -la /app/static/ 2>/dev/null || echo "No /app/static yet" && \
+    echo "" && \
+    echo "=== Step 2: Running collectstatic ===" && \
+    python manage.py collectstatic --noinput --clear --verbosity 2 && \
+    echo "" && \
+    echo "=== Step 3: Contents of /app/staticfiles after collectstatic ===" && \
     ls -la /app/staticfiles/ && \
-    if [ -f /app/staticfiles/index.html ]; then echo "✓ Frontend index.html found"; else echo "✗ WARNING: index.html not found!"; fi && \
-    echo "✓ Static files collected successfully"
+    echo "" && \
+    echo "=== Step 4: Checking for index.html ===" && \
+    if [ -f /app/staticfiles/index.html ]; then \
+        echo "✓ SUCCESS: index.html found at /app/staticfiles/index.html"; \
+        ls -la /app/staticfiles/index.html; \
+    else \
+        echo "✗ ERROR: index.html NOT found"; \
+        echo "Contents of /app/staticfiles/:"; \
+        find /app/staticfiles/ -type f | head -20; \
+    fi
 
 # ============================================================================
 # Configuration & Health Check
