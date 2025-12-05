@@ -8,6 +8,9 @@ from django.conf.urls.static import static
 from django.http import HttpResponse, JsonResponse
 import os
 
+# Import diagnostic views
+from config.diagnostic_views import diagnostic_endpoint, diagnostic_summary
+
 # Health check endpoint
 def health_check(request):
     """Simple health check for deployment platforms."""
@@ -41,6 +44,8 @@ def spa_fallback(request, path=''):
 
 urlpatterns = [
     path('health/', health_check),
+    path('diagnostic/', diagnostic_endpoint, name='diagnostic'),
+    path('diagnostic/summary/', diagnostic_summary, name='diagnostic_summary'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/restaurants/', include('restaurants.urls')),
@@ -52,7 +57,7 @@ urlpatterns = [
     path('', spa_fallback),
     # SPA catch-all: Serve React for all other non-API routes
     # This matches any path that doesn't start with admin/, api/, or static/
-    re_path(r'^(?!admin/|api/|static/|media/).*$', spa_fallback),
+    re_path(r'^(?!admin/|api/|static/|media/|diagnostic/).*$', spa_fallback),
 ]
 
 # Serve media in development
