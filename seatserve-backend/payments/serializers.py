@@ -3,11 +3,11 @@ Payment serializers for DRF
 """
 from rest_framework import serializers
 from .models import Payment
-from orders.serializers import OrderDetailSerializer
+from orders.serializers import OrderSerializer
 
 
 class PaymentSerializer(serializers.ModelSerializer):
-    order_detail = OrderDetailSerializer(source='order', read_only=True)
+    order_detail = OrderSerializer(source='order', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     payment_method_display = serializers.CharField(source='get_payment_method_display', read_only=True)
     
@@ -27,7 +27,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 class PaymentDetailSerializer(serializers.ModelSerializer):
-    order = OrderDetailSerializer(read_only=True)
+    order = OrderSerializer(read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     payment_method_display = serializers.CharField(source='get_payment_method_display', read_only=True)
     
