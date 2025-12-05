@@ -55,9 +55,10 @@ urlpatterns = [
     path('api/payments/', include('payments.urls')),
     # Root path - serve index.html
     path('', spa_fallback),
-    # SPA catch-all: Serve React for all other non-API routes
-    # This matches any path that doesn't start with admin/, api/, or static/
-    re_path(r'^(?!admin/|api/|static/|media/|diagnostic/).*$', spa_fallback),
+    # SPA catch-all: Only match paths without file extensions (no . in path)
+    # This allows WhiteNoise to serve /assets/index-CvI8qVw6.js and other static files
+    re_path(r'^(?!static/|media/|admin/|api/|diagnostic/|\.well-known/)(?!.*\.).*/$', spa_fallback),
+    re_path(r'^(?!static/|media/|admin/|api/|diagnostic/|\.well-known/)(?!.*\.)[^.]+$', spa_fallback),
 ]
 
 # Serve media in development
