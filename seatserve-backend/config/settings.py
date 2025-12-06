@@ -285,6 +285,6 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 # WhiteNoise Configuration for efficient static file serving
-# Use the simpler storage that doesn't create manifest files
-STATICFILES_STORAGE = 'whitenoise.storage.WhiteNoiseStaticFilesStorage'
+# Let Django use its default storage; WhiteNoise middleware will serve static files
+# STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
