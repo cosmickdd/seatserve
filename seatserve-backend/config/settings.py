@@ -289,3 +289,12 @@ CELERY_TASK_SERIALIZER = 'json'
 # WhiteNoise middleware will serve files directly from disk
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
+# WhiteNoise specific settings
+WHITENOISE_AUTOREFRESH = False
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_COMPRESSION_QUALITY = 80
+WHITENOISE_COMPRESSION_OFFLINE = False
+
+# Add max_age for browser caching (1 year for versioned assets)
+WHITENOISE_ADD_HEADERS_FUNCTION = 'whitenoise.middleware.add_never_cache_headers'
+
