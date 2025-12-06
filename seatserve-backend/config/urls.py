@@ -61,6 +61,10 @@ urlpatterns = [
     re_path(r'^[a-zA-Z0-9/_-]+/?$', spa_fallback),  # Simple alphanumeric paths
 ]
 
-# Serve media in development
+# Serve static files in all environments (WhiteNoise handles production efficiently)
 if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    # Production: WhiteNoise middleware serves static files, but Django still needs the URL pattern
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
