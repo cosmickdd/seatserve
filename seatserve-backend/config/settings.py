@@ -285,9 +285,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 # WhiteNoise Configuration for efficient static file serving
-# Enable WhiteNoise compression in production for efficiency
-if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-else:
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+# Use ManifestStaticFilesStorage which creates a manifest mapping original names to hashed names
+# WhiteNoise serves files directly, no compression needed in production
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 

@@ -55,10 +55,11 @@ urlpatterns = [
     path('api/payments/', include('payments.urls')),
     
     # SPA Fallback Routes (after all other patterns)
-    # Only match paths that don't have dots (file extensions)
-    # WhiteNoise middleware intercepts /static/ and /assets/ before these views run
-    path('', spa_fallback),
-    re_path(r'^[a-zA-Z0-9/_-]+/?$', spa_fallback),  # Simple alphanumeric paths
+    # CRITICAL: Regex must NOT match files with extensions (dots)
+    # Files like /assets/index-CvI8qVw6.css have dots, so they won't match and WhiteNoise serves them
+    # Only match paths without extensions: /login, /dashboard, /products, etc.
+    re_path(r'^(?!.*\.)([a-zA-Z0-9/_-]+)/?$', spa_fallback),  # Negative lookahead for dots
+    path('', spa_fallback),  # Root path
 ]
 
 # Serve static files in all environments (WhiteNoise handles production efficiently)

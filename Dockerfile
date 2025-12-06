@@ -92,6 +92,9 @@ RUN echo "=== Step 1: Contents of /app/static before collectstatic ===" && \
     echo "=== Step 3: Contents of /app/staticfiles after collectstatic ===" && \
     ls -la /app/staticfiles/ && \
     echo "" && \
+    echo "=== Step 3b: Checking assets subdirectory ===" && \
+    ls -la /app/staticfiles/assets/ || echo "No assets folder!" && \
+    echo "" && \
     echo "=== Step 4: Checking for index.html ===" && \
     if [ -f /app/staticfiles/index.html ]; then \
         echo "✓ SUCCESS: index.html found at /app/staticfiles/index.html"; \
