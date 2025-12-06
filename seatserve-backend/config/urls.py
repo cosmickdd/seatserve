@@ -23,7 +23,7 @@ def health_check(request):
 def spa_fallback(request, path=''):
     """
     Serve React index.html for SPA routing on all non-API routes.
-    WhiteNoise middleware handles static files BEFORE these views.
+    Static files are served by WhiteNoise middleware BEFORE this view runs.
     """
     import os
     
@@ -42,7 +42,20 @@ def spa_fallback(request, path=''):
         content_type='text/html'
     )
 
-urlpatterns = [
+# CRITICAL: Static file patterns MUST come FIRST before SPA fallback
+# This ensures /static/* and /assets/* are served by Django/WhiteNoise, not by spa_fallback
+urlpatterns = []
+
+# Add static file serving FIRST (before any other patterns)
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    # Production: Include static patterns so WhiteNoise middleware can intercept them
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# NOW add all other URL patterns (API, admin, etc.)
+urlpatterns += [
     path('health/', health_check),
     path('diagnostic/', diagnostic_endpoint, name='diagnostic'),
     path('diagnostic/summary/', diagnostic_summary, name='diagnostic_summary'),
@@ -54,18 +67,8 @@ urlpatterns = [
     path('api/public/', include('orders.public_urls')),
     path('api/payments/', include('payments.urls')),
     
-    # SPA Fallback Routes (after all other patterns)
-    # CRITICAL: Regex must NOT match files with extensions (dots)
-    # Files like /assets/index-CvI8qVw6.css have dots, so they won't match and WhiteNoise serves them
-    # Only match paths without extensions: /login, /dashboard, /products, etc.
-    re_path(r'^(?!.*\.)([a-zA-Z0-9/_-]+)/?$', spa_fallback),  # Negative lookahead for dots
+    # SPA Fallback Routes (LAST - catch-all patterns)
+    # These run AFTER static file patterns, so /static/* and /assets/* won't reach here
+    re_path(r'^(?!.*\.)([a-zA-Z0-9/_-]+)/?$', spa_fallback),  # Paths without extensions
     path('', spa_fallback),  # Root path
 ]
-
-# Serve static files in all environments (WhiteNoise handles production efficiently)
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-else:
-    # Production: WhiteNoise middleware serves static files, but Django still needs the URL pattern
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
